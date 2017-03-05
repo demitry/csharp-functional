@@ -14,23 +14,41 @@ namespace AuditManager
             _maxEntriesPerFile = maxEntriesPerFile;
         }
 
-        public void AddRecord(string currentFile, string visitorName, DateTime timeOfVisit)
+        public FileAction AddRecord(FileContent currentFile, string visitorName, DateTime timeOfVisit)
         {
-            string[] lines = File.ReadAllLines(currentFile);
+            List<AuditEntry> entries = Parse(currentFile.Content);
 
-            if (lines.Length < _maxEntriesPerFile)
+            if (entries.Count < _maxEntriesPerFile)
             {
-                int lastIndex = int.Parse(lines.Last().Split(';')[0]);
-                string newLine = (lastIndex + 1) + ";" + visitorName + ';' + timeOfVisit;
-                File.AppendAllLines(currentFile, new[] { newLine });
-            }
+                entries.Add(new AuditEntry(entries.Count + 1, visitorName, timeOfVisit));
+                string[] newContent = Serialize(entries);
+
+                 return new FileAction(currentFile.FileName, ActionType.Update, newContent);
+             }
             else
             {
-                string newLine = "1; " + visitorName + ';' +
-                timeOfVisit.ToString("s");
-                string newFileName = GetNewFileName(currentFile);
-                File.WriteAllLines(newFileName, new[] { newLine });
+                var entry = new AuditEntry(1, visitorName, timeOfVisit);
+                string[] newContent = Serialize(new List<AuditEntry> { entry });
+                string newFileName = GetNewFileName(currentFile.FileName);
+
+                return new FileAction(newFileName, ActionType.Create, newContent); 
             }
+        }
+
+        private string[] Serialize(List<AuditEntry> entries)
+        {
+            return entries.Select(entry => entry.Number + ';' + entry.Visitor + ';' + entry.TimeOfVisit).ToArray();
+        }
+
+        private List<AuditEntry> Parse(string[] content)
+        {
+            var result = new List<AuditEntry>();
+            foreach (string line in content)
+            {
+                string[] data = line.Split(';');
+                result.Add(new AuditEntry(int.Parse(data[0]), data[1], DateTime.Parse(data[2])));
+            }
+            return result;
         }
 
         private string GetNewFileName(string existingFileName)
@@ -63,4 +81,50 @@ namespace AuditManager
         }
     }
 
-}
+    public struct  AuditEntry
+    {
+        public readonly int Number;
+        public readonly string Visitor;
+        public readonly DateTime TimeOfVisit;
+
+        public AuditEntry(int number, string visitor, DateTime timeOfVisit)
+        {
+            Number = number;
+            Visitor = visitor;
+            TimeOfVisit = timeOfVisit;
+        }
+    }
+
+    public struct FileAction
+    {
+        public readonly string FileName;
+        public readonly string[] Content;
+        public readonly ActionType Type;
+
+        public FileAction(string fileName, ActionType type, string[] content)
+        {
+            Content = content;
+            Type = type;
+            FileName = fileName; 
+        }
+    }
+
+    public enum ActionType
+    {
+        Create,
+        Update,
+        Delete
+    }
+
+    public struct FileContent
+    {
+        public readonly string FileName;
+        public readonly string[] Content;
+
+        public FileContent(string filename, string[] content)
+        {
+            FileName = filename;
+            Content = content;
+        }
+    }
+} 
