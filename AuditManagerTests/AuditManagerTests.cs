@@ -1,5 +1,6 @@
 ﻿using AuditManager;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace AuditManagerTests
@@ -53,5 +54,58 @@ namespace AuditManagerTests
                 "1;Tom Tompson;4/6/2016 6:00:00 PM"
             }, action.Content);
         }
+
+        [Fact]
+        public void RemoveMentionsAbout_removes_mentions_from_filed_in_derectory()
+        {
+            var manager = new AuditManager.AuditManager(10);
+            var file = new FileContent("Audit_1.txt", new[]
+            {
+                "1;Peter Peterson;4/6/2016 4:30:00 PM",
+                "2;Jane Doe;4/6/2016 5:00:00 PM",
+                "3;Jack Rich;4/6/2016 6:00:00 PM"
+            });
+
+            IReadOnlyList<FileAction> actions = manager.RemoveMentionsAbout("Peter Peterson", new[] {file});
+            Assert.Equal(1, actions.Count);
+            Assert.Equal("Audit_1.txt", actions[0].FileName);
+            Assert.Equal(ActionType.Update, actions[0].Type);
+            Assert.Equal( actions[0].Content,
+                new[]
+                {
+                    "1;Jane Doe;4/6/2016 5:00:00 PM",
+                    "2;Jack Rich;4/6/2016 6:00:00 PM"
+                });
+        }
+
+        [Fact]
+        public void RemoveMentionsAbout_removes_whole_file_if_it_doesnot_contain_anything_else()
+        {
+            var manager = new AuditManager.AuditManager(10);
+            var file = new FileContent("Audit_1.txt", new[]
+            {
+                "1;Peter Peterson;4/6/2016 4:30:00 PM"
+            });
+
+            IReadOnlyList<FileAction> actions = manager.RemoveMentionsAbout("Peter Peterson", new[] { file });
+
+            Assert.Equal(1, actions.Count);
+            Assert.Equal("Audit_1.txt", actions[0].FileName);
+            Assert.Equal(ActionType.Delete, actions[0].Type);
+        }
+
+        [Fact]
+        public void RemoveMentionsAbout_does_not_do_anything_if_no_mentions_found()
+        {
+            var manager = new AuditManager.AuditManager(10);
+            var file = new FileContent("Audit_1.txt", new[]
+{
+                "1;Peter Peterson;4/6/2016 4:30:00 PM"
+            });
+            IReadOnlyList<FileAction> actions = manager.RemoveMentionsAbout("Joe Cocker", new[] { file });
+
+            Assert.Equal(0, actions.Count);
+        }
+
     }
 }

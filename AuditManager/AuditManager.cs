@@ -59,26 +59,38 @@ namespace AuditManager
             return "Audit_" + (index + 1) + ".txt";
         }
 
-        public void RemoveMentionsAbout(string visitorName, string directoryName)
+        public IReadOnlyList<FileAction> RemoveMentionsAbout(string visitorName, FileContent[] directoryFiles)
         {
-            foreach (string fileName in Directory.GetFiles(directoryName))
-            {
-                string tempFile = Path.GetTempFileName();
-                List<string> linesToKeep = File
-                    .ReadLines(fileName)
-                    .Where(line => !line.Contains(visitorName))
+            return directoryFiles
+                .Select(file => RemoveMentionsIn(file, visitorName))
+                .Where(action => action != null)
+                .Select(action => action.Value)
+                .ToList();
+        }
+
+        private FileAction? RemoveMentionsIn(FileContent file, string visitorName)
+        {
+            List<AuditEntry> entries = Parse(file.Content);
+
+            List<AuditEntry> newContent =
+                entries.Where(x => x.Visitor != visitorName)
+                    .Select((entry, index) => new AuditEntry(index + 1, entry.Visitor, entry.TimeOfVisit))
                     .ToList();
-                if (linesToKeep.Count == 0)
-                {
-                    File.Delete(fileName);
-                }
-                else
-                {
-                    File.WriteAllLines(tempFile, linesToKeep);
-                    File.Delete(fileName);
-                    File.Move(tempFile, fileName);
-                }
+
+            if (newContent.Count == entries.Count)
+            {
+                // content is the same, then do not update if there is nothing to update
+                return null;
             }
+
+            if (newContent.Count == 0)
+            {
+                // delete file if there is no more entries
+                return new FileAction(file.FileName, ActionType.Delete, new string[0]);
+            }
+
+            // update file
+            return new FileAction(file.FileName, ActionType.Update, Serialize(newContent));
         }
     }
 
