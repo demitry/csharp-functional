@@ -37,7 +37,8 @@ namespace AuditManager
 
         private string[] Serialize(List<AuditEntry> entries)
         {
-            return entries.Select(entry => entry.Number + ';' + entry.Visitor + ';' + entry.TimeOfVisit).ToArray();
+            string [] serializedEntries = entries.Select(entry => entry.Number + ";" + entry.Visitor + ";" + entry.TimeOfVisit).ToArray();
+            return serializedEntries;
         }
 
         private List<AuditEntry> Parse(string[] content)

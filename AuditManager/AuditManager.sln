@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuditManager", "AuditManager.csproj", "{EE913A92-B22E-4790-9A3A-57C0E26EBBFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuditManagerTests", "..\AuditManagerTests\AuditManagerTests.csproj", "{23C911AA-D059-4E66-AE67-A580F8E25648}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{EE913A92-B22E-4790-9A3A-57C0E26EBBFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE913A92-B22E-4790-9A3A-57C0E26EBBFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE913A92-B22E-4790-9A3A-57C0E26EBBFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23C911AA-D059-4E66-AE67-A580F8E25648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23C911AA-D059-4E66-AE67-A580F8E25648}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23C911AA-D059-4E66-AE67-A580F8E25648}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23C911AA-D059-4E66-AE67-A580F8E25648}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
